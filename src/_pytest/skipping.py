@@ -256,6 +256,10 @@ def pytest_runtest_call(item: Item) -> Generator[None, None, None]:
 
     yield
 
+    # Re-evaluate xfail markers after test execution to catch dynamically added markers
+    if not item.config.option.runxfail:
+        item._store[xfailed_key] = evaluate_xfail_marks(item)
+
 
 @hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item: Item, call: CallInfo[None]):

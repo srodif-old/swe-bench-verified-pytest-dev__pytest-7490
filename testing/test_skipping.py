@@ -1230,3 +1230,20 @@ def test_relpath_rootdir(testdir):
     result.stdout.fnmatch_lines(
         ["SKIPPED [[]1[]] tests/test_1.py:2: unconditional skip"]
     )
+
+
+def test_dynamic_xfail_in_test_execution(testdir):
+    """Test that xfail markers added during test execution are handled correctly"""
+    testdir.makepyfile(
+        """
+        import pytest
+
+        def test_xfail_test(request):
+            mark = pytest.mark.xfail(reason="xfail")
+            request.node.add_marker(mark)
+            assert 0
+        """
+    )
+    result = testdir.runpytest("-rsx")
+    result.assert_outcomes(failed=0, skipped=1)
+    assert "XFAIL" in result.stdout.str()
